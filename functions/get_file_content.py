@@ -1,5 +1,6 @@
 import os
 from config import MAX_CHARS
+from google.genai import types
 
 def get_file_content(working_directory, file_path):
     absolute_working_dir = os.path.abspath(working_directory)
@@ -17,3 +18,17 @@ def get_file_content(working_directory, file_path):
 
     except Exception as e:
         return f"Error: {e}"
+    
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Lists the contents of a file in the specified directory. If the file is too large it will end with this message '...File with file_name and  truncated at 10000 characters'",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The relative file path to the file, relative to the working directory. It must be provided",
+            ),
+        },
+    ),
+)

@@ -1,10 +1,13 @@
 import os
 import argparse
+import prompts
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-import functions
-
+from functions.get_files_info import schema_get_files_info
+from functions.get_file_content import schema_get_file_content
+from functions.write_file import schema_write_file
+from functions.run_python_file import schema_run_python_file
 
 def main():
     parser = argparse.ArgumentParser(
@@ -26,9 +29,18 @@ def main():
 
     messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
 
-    response = client.models.generate_content(
-        model='gemini-2.5-flash', contents=messages
+    available_functions = types.Tool(
+        function_declarations=[schema_get_files_info, schema_get_file_content, schema_write_file, schema_run_python_file]
     )
+    
+    response = client.models.generate_content(
+        model='gemini-2.5-flash', 
+        contents=messages,
+        config=types.GenerateContentConfig(
+            tools=[available_functions],
+            system_instruction=prompts.system_prompt)
+    )
+
     if not response.usage_metadata:
         raise RuntimeError("Gemini API response appears to be malformed")
     
@@ -38,10 +50,11 @@ def main():
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}") 
 
     print("Response:")
-    print(response.text)
+    # print(response.text)
 
-    print(os.path.join("calculator", "."))
-    
+    for function_call in response.function_calls:
+        print(f"Calling function: {function_call.name}({function_call.args})")
+
 
 if __name__ == "__main__":
     main()
