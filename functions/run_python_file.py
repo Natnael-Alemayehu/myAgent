@@ -45,7 +45,10 @@ schema_run_python_file = types.FunctionDeclaration(
             ),
             "args": types.Schema(
                 type= types.Type.ARRAY,
-                description="Arguments in order to get a specific file with arguments. Example: python main.py '2+3' the last '2+3' will be passed as an argument as ['2+3']"
+                items=types.Schema(
+                    type=types.Type.STRING
+                ),
+                description="Arguments in order to get a specific file with arguments. Example: python main.py '2+3' the last '2+3' will be passed as an argument as ['2+3']",
             )
         },
     ),
